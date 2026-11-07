@@ -1,0 +1,37 @@
+digraph {
+bgcolor="#283f3f";
+rankdir=TB;
+nodesep=0.8;
+ranksep=0.9;
+node50 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="50"];
+{ rank=source; node50 };
+node20 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="20"];
+node10 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="10"];
+{ rank=sink; node10 };
+edge [color="#FFFFFF"];
+node20 -> node10
+;node30 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="30"];
+{ rank=sink; node30 };
+edge [color="#FFFFFF"];
+node20 -> node30
+;edge [color="#FFFFFF"];
+node50 -> node20
+;node60 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="60"];
+node52 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="52"];
+{ rank=sink; node52 };
+edge [color="#FFFFFF"];
+node60 -> node52
+;node69 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="69"];
+{ rank=sink; node69 };
+edge [color="#FFFFFF"];
+node60 -> node69
+;edge [color="#FFFFFF"];
+node50 -> node60
+;}
