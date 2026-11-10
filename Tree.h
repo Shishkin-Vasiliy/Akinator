@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 typedef int TreeElem_t;
 
@@ -23,7 +25,8 @@ struct Tree_t {
 enum TreeErr_t {
     TREE_OK,
     CALLOC_FAIL,
-    BAD_PTR
+    BAD_PTR,
+    FILE_OPEN_FAIL
 };
 
 struct LogCtx_t {
@@ -40,5 +43,8 @@ int TreeLogInit(Tree_t *Tree, LogCtx_t *LogCtx);
 int TreeDump(Tree_t *Tree, LogCtx_t *LogCtx);
 void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp);
 void DescribeTree(Tree_t *Tree, FILE *fp);
+int ReadPreorder(Tree_t *Tree, const char *file_name);
+size_t ReadFromFile(char **buf, const char *file_name);
+TreeNode_t *BuildTree(Tree_t *Tree, TreeNode_t *Curr, char **buf);
 
 #endif

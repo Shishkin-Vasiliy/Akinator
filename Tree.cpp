@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 TreeErr_t TreeCtor(Tree_t *Tree, TreeElem_t root_data)
 {
@@ -17,7 +19,12 @@ TreeNode_t *CreateNode(TreeElem_t data)
 {
     TreeNode_t *Node = (TreeNode_t *)calloc(1, sizeof(TreeNode_t));
     if (Node)
+    {
         Node->data = data;
+        Node->left = NULL;
+        Node->right = NULL;
+        Node->parent = NULL;
+    }
     return Node;
 }
 
@@ -157,4 +164,108 @@ void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp)
     }
     
     return;
+}
+  
+//int ReadPreorder(Tree_t *Tree, const char *file_name)
+//{
+//    FILE *fp = fopen(file_name);
+//    if (!fp)
+//        return EOF;
+
+//    Tree->root = BuildTree(Tree->root, fp);
+//}
+
+size_t GetFileSize(const char *file_name)
+{
+    struct stat stat_buf = {};
+    stat(file_name, &stat_buf);
+
+    return stat_buf.st_size;
+}
+
+size_t ReadFromFile(char **buf, const char *file_name)
+{   
+    FILE *fp = fopen(file_name, "r");
+    if (!fp)
+        return 0;
+
+    size_t file_size = GetFileSize(file_name);
+
+    *buf = (char *)calloc(file_size, sizeof(char));
+    if (!buf)
+        return 0;
+
+    size_t count = fread(*buf, sizeof(char), file_size, fp);
+
+    fclose(fp);
+
+    return count;
+}
+
+TreeNode_t *BuildTree(Tree_t *Tree, TreeNode_t *Curr, char **buf)
+{
+    const int DATA_SIZE = 32;
+    TreeElem_t data = POIZON_VAL;
+    char data_buf[DATA_SIZE] = {};
+    int len = 0;
+    int num_elems = 0;
+
+    if (**buf == '(')
+    {
+        num_elems = sscanf(*buf + 1, "%d", &data);
+        snprintf(data_buf, DATA_SIZE, "%d", data);
+        len = strlen(data_buf);
+        (*buf) += (len + 1);
+    }
+    else
+    {
+        printf("HUI\n");
+        return NULL;
+    }
+
+    Curr->data = data;
+
+    if (**buf == '(')
+    {
+        Curr->left = CreateNode(POIZON_VAL);
+        if (Curr->left)
+        {
+            Curr->left->parent = Curr;
+            BuildTree(Tree, Curr->left, buf);
+        }
+    }
+    else if (**buf == ')')
+    {
+        (*buf)++;
+        return Curr;
+    }
+    else
+        return NULL;
+
+
+    if (**buf == '(')
+    {
+        Curr->right = CreateNode(POIZON_VAL);
+        if (Curr->right)
+        {
+            Curr->right->parent = Curr;
+            BuildTree(Tree, Curr->right, buf);
+        }
+    }
+    else if (**buf == ')')
+    {
+        (*buf)++;
+        return Curr;
+    }
+    else 
+        return NULL;
+
+    
+    if (**buf == ')')
+    {
+        (*buf)++;
+        return Curr;
+    }
+
+    return Curr;
 }
