@@ -3,17 +3,21 @@ bgcolor="#283f3f";
 rankdir=TB;
 nodesep=0.8;
 ranksep=0.9;
-node50 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
-       label="50"];
-{ rank=source; node50 };
-node10 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
-       label="10"];
-{ rank=sink; node10 };
+node_sakbaev [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="sakbaev"];
+{ rank=source; node_sakbaev };
+node_skibidi [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="skibidi"];
+{ rank=sink; node_skibidi };
 edge [color="#FFFFFF"];
-node50 -> node10
-;node20 [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
-       label="20"];
-{ rank=sink; node20 };
+node_sakbaev -> node_skibidi
+;node_siuuuuu [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="siuuuuu"];
+node_slavamerlou [shape=circle; style=filled; fillcolor="#6A184DA0"; fontcolor="#FFFFFF";
+       label="slavamerlou"];
+{ rank=sink; node_slavamerlou };
 edge [color="#FFFFFF"];
-node50 -> node20
+node_siuuuuu -> node_slavamerlou
+;edge [color="#FFFFFF"];
+node_sakbaev -> node_siuuuuu
 ;}

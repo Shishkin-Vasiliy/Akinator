@@ -7,7 +7,7 @@
 
 TreeErr_t PreOrderCtor(Tree_t *Tree, const char *file_name)
 {
-    TreeNode_t *temp = CreateNode(POIZON_VAL);
+    TreeNode_t *temp = CreateNode(POIZON_NAME);
     if (!temp)
         return CALLOC_FAIL;
     Tree->root = temp;
@@ -48,7 +48,11 @@ TreeNode_t *CreateNode(TreeElem_t data)
     TreeNode_t *Node = (TreeNode_t *)calloc(1, sizeof(TreeNode_t));
     if (Node)
     {
-        Node->data = data;
+        char *temp = strdup(data);
+        if (temp)
+            Node->data = temp;
+        else 
+            return NULL;
         Node->left = NULL;
         Node->right = NULL;
         Node->parent = NULL;
@@ -63,7 +67,7 @@ void PrintPreOrder(TreeNode_t *Node)
 
     printf("(");
 
-    printf("%d", Node->data);
+    printf("%s", Node->data);
 
     if (Node->left)
         PrintPreOrder(Node->left);
@@ -85,7 +89,7 @@ void PrintPostOrder(TreeNode_t *Node)
     if (Node->right)
         PrintPostOrder(Node->right);
 
-    printf("%d", Node->data);
+    printf("%s", Node->data);
 
     printf(")");
 }
@@ -100,7 +104,7 @@ void PrintInOrder(TreeNode_t *Node)
     if (Node->left)
         PrintPostOrder(Node->left);
 
-    printf("%d", Node->data);
+    printf("%s", Node->data);
 
     if (Node->right)
         PrintPostOrder(Node->right);
@@ -123,6 +127,7 @@ TreeErr_t TreeFree(TreeNode_t *Curr)
     if (Curr->right)
         TreeFree(Curr->right);
 
+    free(Curr->data);
     free(Curr);
 
     return TREE_OK;
@@ -206,11 +211,11 @@ void DescribeTree(Tree_t *Tree, FILE *fp)
 
 void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp)
 {  
-    fprintf(fp, "node%d [shape=circle; style=filled; fillcolor=\"#6A184DA0\"; fontcolor=\"#FFFFFF\";\n", Curr->data);
-    fprintf(fp, "       label=\"%d\"];\n", Curr->data);
+    fprintf(fp, "node_%s [shape=circle; style=filled; fillcolor=\"#6A184DA0\"; fontcolor=\"#FFFFFF\";\n", Curr->data);
+    fprintf(fp, "       label=\"%s\"];\n", Curr->data);
 
     if (Curr == Tree->root)
-        fprintf(fp, "{ rank=source; node%d };\n", Tree->root->data);
+        fprintf(fp, "{ rank=source; node_%s };\n", Tree->root->data);
 
     if (Curr->left)
         DrawTree(Tree, Curr->left, fp);
@@ -218,12 +223,12 @@ void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp)
         DrawTree(Tree, Curr->right, fp);
 
     if (!(Curr->left) && !(Curr->right))
-        fprintf(fp, "{ rank=sink; node%d };\n", Curr->data);
+        fprintf(fp, "{ rank=sink; node_%s };\n", Curr->data);
 
     if (Curr != Tree->root)
     {
         fprintf(fp, "edge [color=\"#FFFFFF\"];\n");
-        fprintf(fp, "node%d -> node%d\n;", Curr->parent->data, Curr->data);
+        fprintf(fp, "node_%s -> node_%s\n;", Curr->parent->data, Curr->data);
     }
     
     return;
@@ -258,21 +263,23 @@ size_t ReadFromFile(char **buf, const char *file_name)
 
 TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 {
-    const int DATA_SIZE = 32;
-    TreeElem_t data = POIZON_VAL;
-    char data_buf[DATA_SIZE] = {};
+    const int DATA_SIZE = 64;
+    char data[DATA_SIZE] = {};
     int len = 0;
     int num_elems = 0;
 
     if (**buf == '(')
     {
-        num_elems = sscanf(*buf + 1, "%d", &data);
+        num_elems = sscanf(*buf + 1, "%[^()]", data);
         if (num_elems == 1)
         {
-            snprintf(data_buf, DATA_SIZE, "%d", data);
-            len = strlen(data_buf);
-            (*buf) += (len + 1);
-            Curr->data = data;
+            len = strlen(data);
+            (*buf) += (len + 1);     
+            TreeElem_t temp = strdup(data);
+            if (temp)
+                Curr->data = temp;
+            else
+                return NULL;
         }
     }
     else
@@ -283,7 +290,7 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr->left = CreateNode(POIZON_VAL);
+        Curr->left = CreateNode(POIZON_NAME);
         if (Curr->left)
         {
             Curr->left->parent = Curr;
@@ -301,7 +308,7 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr->right = CreateNode(POIZON_VAL);
+        Curr->right = CreateNode(POIZON_NAME);
         if (Curr->right)
         {
             Curr->right->parent = Curr;
@@ -329,15 +336,14 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
 TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 {
-    const int DATA_SIZE = 32;
-    TreeElem_t data = POIZON_VAL;
-    char data_buf[DATA_SIZE] = {};
+    const int DATA_SIZE = 64;
+    char data[DATA_SIZE] = {};
     int len = 0;
     int num_elems = 0;
 
     if (**buf == '(')
     {
-        Curr = CreateNode(POIZON_VAL);
+        Curr = CreateNode(POIZON_NAME);
         if (!Tree->root)
             Tree->root = Curr;
         (*buf)++;
@@ -357,13 +363,16 @@ TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
             (Curr->right)->parent = Curr;
     }
 
-    num_elems = sscanf(*buf, "%d", &data);
+    num_elems = sscanf(*buf, "%[^()]", data);
     if (num_elems == 1)
     {
-        snprintf(data_buf, DATA_SIZE, "%d", data);
-        len = strlen(data_buf);
-        Curr->data = data;
-        (*buf) += len;
+        len = strlen(data);
+        TreeElem_t temp = strdup(data);
+        if (temp)
+            Curr->data = temp;
+        else 
+            return NULL;
+        (*buf) += len;       
     }
 
     if (**buf == ')')
@@ -375,17 +384,17 @@ TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
     return Curr;
 }
 
+
 TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 {
-    const int DATA_SIZE = 32;
-    TreeElem_t data = POIZON_VAL;
-    char data_buf[DATA_SIZE] = {};
+    const int DATA_SIZE = 64;
+    char data[DATA_SIZE] = {};
     int len = 0;
     int num_elems = 0;
 
     if (**buf == '(')
     {
-        Curr = CreateNode(POIZON_VAL);
+        Curr = CreateNode(POIZON_NAME);
         if (!Tree->root)
             Tree->root = Curr;
         (*buf)++;
@@ -393,19 +402,21 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr->left = BuildFromPostOrder(Tree, Curr->left, buf);
+        Curr->left = BuildFromInOrder(Tree, Curr->left, buf);
         if (Curr->left)
             (Curr->left)->parent = Curr;
     }
 
-
-    num_elems = sscanf(*buf, "%d", &data);
+    num_elems = sscanf(*buf, "%[^()]", data);
     if (num_elems == 1)
     {
-        snprintf(data_buf, DATA_SIZE, "%d", data);
-        len = strlen(data_buf);
-        Curr->data = data;
-        (*buf) += len;
+        len = strlen(data);
+        TreeElem_t temp = strdup(data);
+        if (temp)
+            Curr->data = temp;
+        else
+            return NULL;
+        (*buf) += len;          
     }
 
     if (**buf == ')')
@@ -421,7 +432,7 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
         if (Curr->right)
             (Curr->right)->parent = Curr;
     }
-
+ 
     if (**buf == ')')
     {
         (*buf)++;

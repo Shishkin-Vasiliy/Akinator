@@ -7,9 +7,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-typedef int TreeElem_t;
+typedef char* TreeElem_t;
 
-#define POIZON_VAL 0x0D01B0EB
+#define POIZON_NAME "Sakbaev"
 
 struct TreeNode_t {
     TreeElem_t data;
