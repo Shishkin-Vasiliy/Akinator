@@ -7,11 +7,6 @@
 
 TreeErr_t PreOrderCtor(Tree_t *Tree, const char *file_name)
 {
-    TreeNode_t *temp = CreateNode(POIZON_NAME);
-    if (!temp)
-        return CALLOC_FAIL;
-    Tree->root = temp;
-
     char *buf = NULL;
 
     ReadFromFile(&buf, file_name);
@@ -43,16 +38,12 @@ TreeErr_t InOrderCtor(Tree_t *Tree, const char *file_name)
     return TREE_OK;
 }
 
-TreeNode_t *CreateNode(TreeElem_t data)
+TreeNode_t *CreateNode(void)
 {
     TreeNode_t *Node = (TreeNode_t *)calloc(1, sizeof(TreeNode_t));
     if (Node)
     {
-        char *temp = strdup(data);
-        if (temp)
-            Node->data = temp;
-        else 
-            return NULL;
+        Node->data = NULL;
         Node->left = NULL;
         Node->right = NULL;
         Node->parent = NULL;
@@ -270,17 +261,22 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        num_elems = sscanf(*buf + 1, "%[^()]", data);
-        if (num_elems == 1)
-        {
-            len = strlen(data);
-            (*buf) += (len + 1);     
-            TreeElem_t temp = strdup(data);
-            if (temp)
-                Curr->data = temp;
-            else
-                return NULL;
-        }
+        Curr = CreateNode();
+        if (!Tree->root)
+            Tree->root = Curr;
+        (*buf)++; 
+    }
+
+    num_elems = sscanf(*buf, "%[^()]", data);
+    if (num_elems == 1)
+    {
+        len = strlen(data);
+        (*buf) += len;
+        TreeElem_t temp = strdup(data);
+        if (temp)
+            Curr->data = temp;
+        else
+            return NULL;
     }
     else
     {
@@ -290,40 +286,24 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr->left = CreateNode(POIZON_NAME);
+        Curr->left = BuildFromPreOrder(Tree, Curr->left, buf);
         if (Curr->left)
-        {
-            Curr->left->parent = Curr;
-            BuildFromPreOrder(Tree, Curr->left, buf);
-        }
+            (Curr->left)->parent = Curr;
     }
-    else if (**buf == ')')
+
+    if (**buf == ')')
     {
         (*buf)++;
         return Curr;
     }
-    else
-        return NULL;
-
 
     if (**buf == '(')
     {
-        Curr->right = CreateNode(POIZON_NAME);
+        Curr->right = BuildFromPreOrder(Tree, Curr->right, buf);
         if (Curr->right)
-        {
-            Curr->right->parent = Curr;
-            BuildFromPreOrder(Tree, Curr->right, buf);
-        }
+            (Curr->right)->parent = Curr;
     }
-    else if (**buf == ')')
-    {
-        (*buf)++;
-        return Curr;
-    }
-    else 
-        return NULL;
 
-    
     if (**buf == ')')
     {
         (*buf)++;
@@ -343,7 +323,7 @@ TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr = CreateNode(POIZON_NAME);
+        Curr = CreateNode();
         if (!Tree->root)
             Tree->root = Curr;
         (*buf)++;
@@ -394,7 +374,7 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
 
     if (**buf == '(')
     {
-        Curr = CreateNode(POIZON_NAME);
+        Curr = CreateNode();
         if (!Tree->root)
             Tree->root = Curr;
         (*buf)++;

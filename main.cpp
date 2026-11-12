@@ -8,9 +8,9 @@ int main(void)
     LogCtx_t LogCtx = {};
     TreeLogInit(&Tree, &LogCtx);
 
-    InOrderCtor(&Tree, "inorder.txt");
+    PreOrderCtor(&Tree, "preorder.txt");
 
-    PrintInOrder(Tree.root);
+    PrintPreOrder(Tree.root);
 
     TreeDump(&Tree, &LogCtx);
 
