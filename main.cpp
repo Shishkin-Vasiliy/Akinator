@@ -10,7 +10,17 @@ int main(void)
 
     PreOrderCtor(&Tree, "preorder.txt");
 
+    TreeDump(&Tree, &LogCtx);
+    TreeErr_t err = TreeVerify(&Tree);
+    printf("err = %d\n", err);
+
     PrintPreOrder(Tree.root);
+    printf("\n");
+
+    DeleteNode(&Tree, "pizda");
+
+    PrintPreOrder(Tree.root);
+    printf("\n");
 
     TreeDump(&Tree, &LogCtx);
 

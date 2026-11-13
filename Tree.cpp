@@ -51,6 +51,113 @@ TreeNode_t *CreateNode(void)
     return Node;
 }
 
+TreeNode_t *FindNode(TreeNode_t *Curr, const char *data)
+{
+    if (Curr == NULL)
+        return NULL;
+
+    if (strcmp(Curr->data, data) == 0)
+        return Curr;
+
+    if (strcmp(Curr->data, data) > 0)
+        return FindNode(Curr->left, data);
+    else if (strcmp(Curr->data, data) < 0)
+        return FindNode(Curr->right, data);
+
+    return NULL;
+}
+
+TreeNode_t *FindRightLeaf(TreeNode_t *Curr)
+{
+    if (!Curr)
+        return NULL;
+
+    if (Curr->right == NULL)
+        return Curr;
+
+    return FindRightLeaf(Curr->right);
+
+    return NULL;
+}
+
+TreeNode_t *DeleteNode(Tree_t *Tree, const char *data)
+{
+    TreeNode_t *Curr = FindNode(Tree->root, data);
+
+    if (!Curr)
+        return NULL;
+
+    TreeNode_t *TempLeft = Curr->left;
+    TreeNode_t *TempRight = Curr->right;
+    TreeNode_t *TempParent = Curr->parent;
+    TreeNode_t *NewCurr = NULL;
+
+    if (!(Curr->left) && !(Curr->right))
+    {
+        if (TempParent && TempParent->left == Curr)
+            TempParent->left = NULL;
+        else if (TempParent && TempParent->right == Curr)
+            TempParent->right = NULL;
+        else if (!TempParent && Tree->root == Curr)
+            Tree->root = NULL;
+
+        free(Curr->data);
+        free(Curr);
+
+        return NULL;
+    }
+
+    if (!TempLeft && TempRight)
+        NewCurr = TempRight;
+    else if (TempLeft && !TempRight)
+        NewCurr = TempLeft;
+    else 
+        NewCurr = FindRightLeaf(TempLeft);
+
+    if (Tree->root == Curr)
+        Tree->root = NewCurr;
+
+    else if (NewCurr->parent != Curr && !NewCurr->left)
+        NewCurr->parent->right = NULL;
+    else if (NewCurr->parent != Curr && NewCurr->left)
+    {
+        NewCurr->parent->right = NewCurr->left;
+        NewCurr->left->parent = NewCurr->parent;
+    }
+   
+    if (TempLeft && NewCurr != TempLeft)
+    {
+        NewCurr->left = TempLeft;
+        TempLeft->parent = NewCurr;
+    }
+
+    if (TempRight && NewCurr->parent != Curr)
+    {
+        NewCurr->right = TempRight;
+        TempRight->parent = NewCurr;
+    }
+
+    if (TempParent && TempParent->left == Curr)
+        TempParent->left = NewCurr;
+    else if (TempParent && TempParent->right == Curr)
+        TempParent->right = NewCurr;
+    else if (!TempParent)
+    {
+        if (TempRight)
+        {
+            NewCurr->right = TempRight;
+            TempRight->parent = NewCurr;
+        }
+    }
+ 
+    NewCurr->parent = TempParent;
+
+    free(Curr->data);
+    free(Curr);
+    
+    return NewCurr;
+}
+
 void PrintPreOrder(TreeNode_t *Node)
 {
     if (!Node)
@@ -62,8 +169,12 @@ void PrintPreOrder(TreeNode_t *Node)
 
     if (Node->left)
         PrintPreOrder(Node->left);
+    else if (Node->left == NULL && Node->right != NULL)
+        printf("()");
     if (Node->right)
         PrintPreOrder(Node->right);
+    else if (Node->right == NULL && Node->left != NULL)
+        printf("()");
 
     printf(")");
 }
@@ -76,9 +187,13 @@ void PrintPostOrder(TreeNode_t *Node)
     printf("(");
 
     if (Node->left)
-        PrintPostOrder(Node->left);
+        PrintPreOrder(Node->left);
+    else if (Node->left == NULL && Node->right != NULL)
+        printf("()");
     if (Node->right)
-        PrintPostOrder(Node->right);
+        PrintPreOrder(Node->right);
+    else if (Node->right == NULL && Node->left != NULL)
+        printf("()");
 
     printf("%s", Node->data);
 
@@ -93,12 +208,16 @@ void PrintInOrder(TreeNode_t *Node)
     printf("(");
 
     if (Node->left)
-        PrintPostOrder(Node->left);
+        PrintPreOrder(Node->left);
+    else if (Node->left == NULL && Node->right != NULL)
+        printf("()");
 
     printf("%s", Node->data);
 
     if (Node->right)
-        PrintPostOrder(Node->right);
+        PrintPreOrder(Node->right);
+    else if (Node->right == NULL && Node->left != NULL)
+        printf("()");
 
     printf(")");
 }
@@ -179,7 +298,7 @@ int TreeDump(Tree_t *Tree, LogCtx_t *LogCtx)
         return EOF;
 
     LogCtx->pict_index[num_picts] = temp;
-    num_picts++;
+    LogCtx->num_picts++;
 
     return 0;
 }
@@ -280,7 +399,7 @@ TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
     }
     else
     {
-        printf("HUI\n");
+        (*buf)++;
         return NULL;
     }
 
@@ -354,6 +473,11 @@ TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
             return NULL;
         (*buf) += len;       
     }
+    else
+    {
+        (*buf)++;
+        return NULL;
+    }
 
     if (**buf == ')')
     {
@@ -398,6 +522,11 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
             return NULL;
         (*buf) += len;          
     }
+    else
+    {
+        (*buf)++;
+        return NULL;
+    }
 
     if (**buf == ')')
     {
@@ -420,4 +549,28 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf)
     }
 
     return Curr;
+}
+
+TreeErr_t TreeVerify(Tree_t *Tree)
+{
+    if (!Tree->root)
+        return TREE_EMPTY;
+    return CheckNode(Tree->root);
+}
+
+TreeErr_t CheckNode(TreeNode_t *Node)
+{
+    static TreeErr_t err = TREE_OK;
+
+    if (Node->left && strcmp(Node->data, Node->left->data) < 0)
+        return TREE_CORRUPTED;
+    if (Node->right && strcmp(Node->data, Node->right->data) > 0)
+        return TREE_CORRUPTED;
+
+    if (Node->left)
+        CheckNode(Node->left);
+    if (Node->right)
+        CheckNode(Node->right);
+
+    return TREE_OK;
 }

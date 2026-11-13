@@ -9,8 +9,6 @@
 
 typedef char* TreeElem_t;
 
-#define POIZON_NAME "Sakbaev"
-
 struct TreeNode_t {
     TreeElem_t data;
     TreeNode_t *left;
@@ -26,7 +24,9 @@ enum TreeErr_t {
     TREE_OK,
     CALLOC_FAIL,
     BAD_PTR,
-    FILE_OPEN_FAIL
+    FILE_OPEN_FAIL,
+    TREE_EMPTY,
+    TREE_CORRUPTED
 };
 
 struct LogCtx_t {
@@ -39,7 +39,7 @@ TreeErr_t PostOrderCtor(Tree_t *Tree, const char *file_name);
 TreeErr_t InOrderCtor(Tree_t *Tree, const char *file_name);
 TreeErr_t TreeDtor(Tree_t *Tree);
 TreeErr_t TreeFree(TreeNode_t *Curr);
-TreeNode_t *CreateNode(TreeElem_t data);
+TreeNode_t *CreateNode(void);
 void PrintPreOrder(TreeNode_t *Node);
 void PrintPostOrder(TreeNode_t *Node);
 void PrintInOrder(TreeNode_t *Node);
@@ -51,5 +51,10 @@ size_t ReadFromFile(char **buf, const char *file_name);
 TreeNode_t *BuildFromPreOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf);
 TreeNode_t *BuildFromPostOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf);
 TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf);
+TreeNode_t *DeleteNode(Tree_t *Tree, const char *data);
+TreeNode_t *FindNode(TreeNode_t *Curr, const char *data);
+TreeNode_t *FindRightLeaf(TreeNode_t *Curr);
+TreeErr_t TreeVerify(Tree_t *Tree);
+TreeErr_t CheckNode(TreeNode_t *Node);
 
 #endif
