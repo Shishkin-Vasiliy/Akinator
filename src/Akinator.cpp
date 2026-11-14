@@ -41,10 +41,10 @@ void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, Lo
 
     Greet();
 
-    while (1)
+    while (true)
     {
+        ClearBuf();
         SlowPrintf("Do you wanna continue? [Y/n]\n");
-
         scanf("%c", &ch);
         if (ch == 'n' || ch == 'N')
             break;
@@ -75,10 +75,13 @@ void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, Lo
         SlowPrintf("Do you wanna see TreeDump? [Y/n]\n");
         ClearBuf();
         scanf("%c", &ch);
-        if (ch == 'y' || ch == 'Y')
+        if (ch != 'n' && ch != 'N')
         {
             TreeDump(Tree, LogCtx);
         }
+        else 
+            SlowPrintf("Press any button\n");
+
         ClearBuf();
     }
 
@@ -173,12 +176,85 @@ TreeErr_t AddNew(Tree_t *Tree, TreeNode_t *Curr, char *NewNodeBuf)
 
     return TREE_OK;
 }
+ 
+TreeNode_t *DefineNode(Tree_t *Tree, const char *data)
+{
+    TreeNode_t *Definition[MAX_HEIGHT] = {};
 
+    size_t count = GetDefinition(Tree->root, data, Definition);
+    SlowPrintf("%s ", data);
+    for (; count > 0; --count)
+    {
+        SlowPrintf("%s, ", (Definition[count])->data);
+    }
+    printf("\n");
+
+    return Tree->root;
+}
+
+size_t GetDefinition(TreeNode_t *root, const char *data, TreeNode_t **Definition)
+{
+    size_t i = 0;
+    TreeNode_t *Node = FindPreOrder(root, data);
+    if (!Node)
+        return 0;
+
+    do
+    {
+        Definition[i] = Node;
+        Node = Node->parent;
+        i++;
+    } while (Node);
+
+    return i - 1;
+}
+
+void Difference(Tree_t *Tree, const char *data_1, const char *data_2)
+{
+    TreeNode_t *Definition_1[MAX_HEIGHT] = {};
+    size_t count_1 = GetDefinition(Tree->root, data_1, Definition_1);
+
+    TreeNode_t *Definition_2[MAX_HEIGHT] = {};
+    size_t count_2 = GetDefinition(Tree->root, data_2, Definition_2);
+
+    SlowPrintf("%s and %s in common ", data_1, data_2);
+    size_t i = 0;
+    for (; i < count_1 && i < count_2; i++)
+    {
+        if (Definition_1[i] == Definition_2[i])
+        {
+            SlowPrintf("%s ", (Definition_1[i]->data));
+        }
+        else
+        {
+            i++;
+            break;
+        }
+    }
+    printf("\n");
+
+    if (i < count_1 || i < count_2)
+    {
+        SlowPrintf("%s ", data_1);
+        for (size_t j = i; j < count_1; j++)
+        {
+            SlowPrintf("%s ", (Definition_1[j])->data);
+        }
+        printf("\n");
+        SlowPrintf("%s ", data_2);
+        for (size_t j = i; j < count_2; j++)
+        {
+            SlowPrintf("%s ", (Definition_2[j])->data);
+        }
+        printf("\n");
+    }
+}
+ 
 void Greet(void)
 {
     SlowPrintf("###########################\n");
     SlowPrintf("---------AKINATOR----------\n");
-    SlowPrintf("###########################\n");
+    SlowPrintf("###########################\n\n");   
 }
 
 

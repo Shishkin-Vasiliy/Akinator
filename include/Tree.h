@@ -35,6 +35,7 @@ struct LogCtx_t {
 };
 
 const int DATA_SIZE = 64;
+const int MAX_HEIGHT = 32;
 
 TreeErr_t PreOrderCtor(Tree_t *Tree, const char *file_name);
 TreeErr_t PostOrderCtor(Tree_t *Tree, const char *file_name);
@@ -70,6 +71,7 @@ TreeNode_t *BuildFromInOrder(Tree_t *Tree, TreeNode_t *Curr, char **buf);
 TreeNode_t *DeleteNode(Tree_t *Tree, const char *data);
 TreeNode_t *FindNode(TreeNode_t *Curr, const char *data);
 TreeNode_t *FindRightLeaf(TreeNode_t *Curr);
+TreeNode_t *FindPreOrder(TreeNode_t *Node, const char *data);
 
 TreeErr_t TreeVerify(Tree_t *Tree);
 TreeErr_t CheckNode(TreeNode_t *Node);

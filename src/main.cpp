@@ -9,19 +9,16 @@ int main(void)
     LogCtx_t LogCtx = {};
     TreeLogInit(&LogCtx);
 
-    AkinatorPreOrderCtor(&Tree, "preorder.txt");
+    AkinatorPreOrderCtor(&Tree, "clash_royale_preorder.txt");
 
-    AkinatorStart(&Tree, "preorder.txt", PREORDER, &LogCtx);
+    AkinatorStart(&Tree, "database/clash_royale_preorder.txt", PREORDER, &LogCtx);
 
-    DeleteNode(&Tree, "hahaha");
+    DefineNode(&Tree, "ice_spirit");
 
-    DeleteNode(&Tree, "netnetnet");
-
-    DeleteNode(&Tree, "dadada");
-
+    Difference(&Tree, "sparky", "goblins");
     TreeDump(&Tree, &LogCtx);
 
-    TreeDtor(&Tree);
+    AkinatorDtor(&Tree);
     TreeLogDeinit(&LogCtx);
 
     return 0;

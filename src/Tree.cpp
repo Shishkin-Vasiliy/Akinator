@@ -1,18 +1,29 @@
-#include "Tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "Tree.h"
+#include "Akinator.h"
 
 TreeErr_t PreOrderCtor(Tree_t *Tree, const char *file_name)
 {
     char *buf = NULL;
-
-    ReadFromFile(&buf, file_name);
-
+    const int PATH_SIZE = 64;
+    char path[PATH_SIZE] = {};
+    
+    snprintf(path, PATH_SIZE, "database/%s", file_name);
+    size_t count = ReadFromFile(&buf, path);
+    
+    if (count == 0)
+    {
+        free(buf);
+        buf = NULL;
+        snprintf(path, PATH_SIZE, "backup_database/%s", file_name);
+        count = ReadFromFile(&buf, path);
+    }
+    
     char *temp = buf;
-
     BuildFromPreOrder(Tree, Tree->root, &temp);
 
     free(buf);
@@ -23,10 +34,19 @@ TreeErr_t PreOrderCtor(Tree_t *Tree, const char *file_name)
 TreeErr_t PostOrderCtor(Tree_t *Tree, const char *file_name)
 {
     char *buf = NULL;
-
-    ReadFromFile(&buf, file_name);
-
     char *temp = buf;
+    const int PATH_SIZE = 30;
+    char path[PATH_SIZE] = {};
+
+    size_t count = ReadFromFile(&buf, file_name);
+
+    if (count == 0)
+    {
+        free(buf);
+        buf = NULL;
+        snprintf(path, PATH_SIZE, "backup_database/%s", file_name);
+        count = ReadFromFile(&buf, path);
+    }
 
     BuildFromPostOrder(Tree, Tree->root, &temp);
 
@@ -38,10 +58,19 @@ TreeErr_t PostOrderCtor(Tree_t *Tree, const char *file_name)
 TreeErr_t InOrderCtor(Tree_t *Tree, const char *file_name)
 {
     char *buf = NULL;
-
-    ReadFromFile(&buf, file_name);
-
     char *temp = buf;
+    const int PATH_SIZE = 30;
+    char path[PATH_SIZE] = {};
+
+    size_t count = ReadFromFile(&buf, file_name);
+
+    if (count == 0)
+    {
+        free(buf);
+        buf = NULL;
+        snprintf(path, PATH_SIZE, "backup_database/%s", file_name);
+        count = ReadFromFile(&buf, path);
+    }
 
     BuildFromInOrder(Tree, Tree->root, &temp);
 
@@ -64,17 +93,42 @@ TreeNode_t *CreateNode(void)
 }
 
 TreeNode_t *FindNode(TreeNode_t *Curr, const char *data)
-{
-    if (Curr == NULL)
+{   
+    if (!Curr)
         return NULL;
 
     if (strcmp(Curr->data, data) == 0)
         return Curr;
 
-    if (strcmp(Curr->data, data) > 0)
+    else if (strcmp(Curr->data, data) > 0 && Curr->left)
         return FindNode(Curr->left, data);
-    else if (strcmp(Curr->data, data) < 0)
+
+    else
         return FindNode(Curr->right, data);
+}
+
+TreeNode_t *FindPreOrder(TreeNode_t *Node, const char *data)
+{
+    static TreeNode_t *Temp = NULL;
+    if (!Node)
+        return NULL;
+
+    if (strcmp(Node->data, data) == 0)
+        return Node;
+
+    if (Node->left)
+    {
+        Temp = FindPreOrder(Node->left, data);
+        if (Temp != NULL)
+            return Temp;
+    }   
+
+    if (Node->right)
+    {
+        Temp = FindPreOrder(Node->right, data);
+        if (Temp != NULL)
+            return Temp;
+    }
 
     return NULL;
 }
@@ -95,7 +149,6 @@ TreeNode_t *FindRightLeaf(TreeNode_t *Curr)
 TreeNode_t *DeleteNode(Tree_t *Tree, const char *data)
 {
     TreeNode_t *Curr = FindNode(Tree->root, data);
-
     if (!Curr)
         return NULL;
 
@@ -300,6 +353,8 @@ int TreeDump(Tree_t *Tree, LogCtx_t *LogCtx)
 
     size_t num_picts = LogCtx->num_picts;
 
+    SlowPrintf("Dump processing...\n");
+
     snprintf(dot_path, PATH_SIZE, "TreeLog/pict_%lu.dot", num_picts);
 
     FILE *dot_fp = fopen(dot_path, "w");
@@ -320,6 +375,9 @@ int TreeDump(Tree_t *Tree, LogCtx_t *LogCtx)
 
     LogCtx->pict_index[num_picts] = temp;
     LogCtx->num_picts++;
+
+    SlowPrintf("Dump complete!\n");
+    SlowPrintf("Press any button\n");
 
     return 0;
 }
@@ -343,7 +401,7 @@ void DescribeTree(Tree_t *Tree, FILE *fp)
 void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp)
 {  
     fprintf(fp, "node_%s [shape=Mrecord; style=filled; fillcolor=\"#DB7093\"; fontcolor=\"#FFFFFF\";\n", Curr->data);
-    fprintf(fp, "       label=\"%s\"];\n", Curr->data);
+    fprintf(fp, "       label=\"  {  ptr = %p | parent = %p  | data = %s | {left = %p | right = %p}}\"];\n", Curr, Curr->parent, Curr->data, Curr->left, Curr->right);
 
     if (Curr == Tree->root)
         fprintf(fp, "{ rank=source; node_%s };\n", Tree->root->data);
@@ -361,12 +419,12 @@ void DrawTree(Tree_t *Tree, TreeNode_t *Curr, FILE *fp)
         if (Curr == Curr->parent->left)
         {
             fprintf(fp, "edge [color=\"#FFFFFF\"];\n");
-            fprintf(fp, "node_%s -> node_%s [label = \"DA\"; color=\"#228B22\"]\n;", Curr->parent->data, Curr->data);
+            fprintf(fp, "node_%s:sw -> node_%s:n [label = \"DA\"; color=\"#228B22\"]\n;", Curr->parent->data, Curr->data);
         }
         else if (Curr == Curr->parent->right)
         {
             fprintf(fp, "edge [color=\"#FFFFFF\"];\n");
-            fprintf(fp, "node_%s -> node_%s [label = \"NET\"; color=\"#DC143C\"]\n;", Curr->parent->data, Curr->data);
+            fprintf(fp, "node_%s:se -> node_%s:n [label = \"NET\"; color=\"#DC143C\"]\n;", Curr->parent->data, Curr->data);
         }
     }
     
