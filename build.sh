@@ -13,3 +13,4 @@ g++ src/*.cpp \
     -fsized-deallocation -fstack-protector -fstrict-overflow -flto-odr-type-merging \
     -fno-omit-frame-pointer -pie -fPIE -Werror=vla \
     -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr \
+    -lraylib -I/home/spreeggy/raylib-5.0_linux_amd64/include -I/home/spreeggy/raylib-5.0_linux_amd64/include -lGL -lm -lpthread -ldl -lrt -lX11 \

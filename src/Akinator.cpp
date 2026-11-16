@@ -1,37 +1,39 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <ctype.h>
 #include "Tree.h"
 #include "Akinator.h"
+#include "Graphics.h"
 
-TreeErr_t AkinatorPreOrderCtor(Tree_t *Tree, const char *file_name)
+TreeErr_t AkinatorPreOrderCtor(Tree_t *Tree, const char *file_name, VisualFlag_t flag)
 {
+    if (flag == GRAPHICS_FLAG)
+        InitGraphics();
     return PreOrderCtor(Tree, file_name);
 }
 
-TreeErr_t AkinatorPostOrderCtor(Tree_t *Tree, const char *file_name)
+TreeErr_t AkinatorPostOrderCtor(Tree_t *Tree, const char *file_name, VisualFlag_t flag)
 {
+    if (flag == GRAPHICS_FLAG)
+        InitGraphics();
     return PostOrderCtor(Tree, file_name);
 }
 
-TreeErr_t AkinatorInOrderCtor(Tree_t *Tree, const char *file_name)
+TreeErr_t AkinatorInOrderCtor(Tree_t *Tree, const char *file_name, VisualFlag_t flag)
 {
+    if (flag == GRAPHICS_FLAG)
+        InitGraphics();
     return InOrderCtor(Tree, file_name);
 }
 
-TreeErr_t AkinatorDtor(Tree_t *Tree)
+TreeErr_t AkinatorDtor(Tree_t *Tree, VisualFlag_t flag)
 {
+    if (flag == GRAPHICS_FLAG)
+        CloseWindow();
     return TreeDtor(Tree);
 }
 
-void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, LogCtx_t *LogCtx)
+void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, LogCtx_t *LogCtx, VisualFlag_t flag)
 {
-    char ch = 0;
+    //char ch = 0;
+    Answer_t answer = YES;
     int fail = 0;
     TreeNode_t *Node = NULL;
     char NewNodeBuf[DATA_SIZE] = {};
@@ -39,17 +41,23 @@ void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, Lo
     if (!fp)
         return;
 
-    Greet();
+    Greet(flag);
 
     while (true)
     {
         ClearBuf();
-        SlowPrintf("Do you wanna continue? [Y/n]\n");
-        scanf("%c", &ch);
-        if (ch == 'n' || ch == 'N')
+        AskQuestion("Do you wanna continue? [Y/n]\n", flag);
+        //SlowPrintf("Do you wanna continue? [Y/n]\n");
+        //scanf("%c", &ch);
+
+        answer = GetAnswer(flag);
+        if (answer != YES)
             break;
 
-        Node = Guess(Tree, &fail, NewNodeBuf);
+        //if (ch == 'n' || ch == 'N')
+        //    break;
+
+        Node = Guess(Tree, &fail, NewNodeBuf, flag);
 
         if (fail)
             AddNew(Tree, Node, NewNodeBuf);
@@ -72,15 +80,26 @@ void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, Lo
                 ;
         }
 
-        SlowPrintf("Do you wanna see TreeDump? [Y/n]\n");
+        AskQuestion("Do you wanna see TreeDump? [Y/n]\n", flag);
+
+        //SlowPrintf("Do you wanna see TreeDump? [Y/n]\n");       ///// это заменить на универсальную функцию вопроса
+
         ClearBuf();
-        scanf("%c", &ch);
-        if (ch != 'n' && ch != 'N')
-        {
+        answer = GetAnswer(flag);
+
+        //scanf("%c", &ch); 
+                                              ///// а это на функцию получения ответа
+
+        if (answer == YES)
             TreeDump(Tree, LogCtx);
-        }
+
+        //if (ch != 'n' && ch != 'N')
+        //{
+        //    TreeDump(Tree, LogCtx);
+        //}
+
         else 
-            SlowPrintf("Press any button\n");
+            SlowPrintf("Press any key\n");
 
         ClearBuf();
     }
@@ -88,20 +107,26 @@ void AkinatorStart(Tree_t *Tree, const char *file_name, ModeFlag_t mode_flag, Lo
     fclose(fp);
 }
 
-TreeNode_t *Guess(Tree_t *Tree, int *fail, char *NewNodeBuf)
+TreeNode_t *Guess(Tree_t *Tree, int *fail, char *NewNodeBuf, VisualFlag_t flag)
 {
+    Answer_t answer = YES;
     static char ch = 0;
+    const int BUF_SIZE = 64;
+    char buf[BUF_SIZE] = {};
     TreeNode_t *Node = Tree->root;
     if (!Node)
         return NULL;
 
     while (1)
     {
-        SlowPrintf("Is it %s?\n", Node->data);
+        snprintf(buf, BUF_SIZE, "Is it %s?\n", Node->data);
+        AskQuestion(buf, flag);
+        //SlowPrintf("Is it %s?\n", Node->data);
         ClearBuf();
-        scanf("%c", &ch);
-
-        if (ch == 'y' || ch == 'Y')
+        answer = GetAnswer(flag);
+        //scanf("%c", &ch);
+        if (answer == YES)
+        //if (ch == 'y' || ch == 'Y')
         {
             if (Node->left)
             {
@@ -115,7 +140,8 @@ TreeNode_t *Guess(Tree_t *Tree, int *fail, char *NewNodeBuf)
                 return Node;
             }
         }
-        else if (ch == 'n' || ch == 'N')
+        else if (answer == NO)
+        //else if (ch == 'n' || ch == 'N')
         {
             if (Node->right)
             {
@@ -133,6 +159,7 @@ TreeNode_t *Guess(Tree_t *Tree, int *fail, char *NewNodeBuf)
         }
     }
 }
+
 
 TreeErr_t AddNew(Tree_t *Tree, TreeNode_t *Curr, char *NewNodeBuf)
 {
@@ -250,13 +277,17 @@ void Difference(Tree_t *Tree, const char *data_1, const char *data_2)
     }
 }
  
-void Greet(void)
+void Greet(VisualFlag_t flag)
 {
-    SlowPrintf("###########################\n");
-    SlowPrintf("---------AKINATOR----------\n");
-    SlowPrintf("###########################\n\n");   
+    //if (flag == GRAPHICS_FLAG)  
+    //    RenderGreet();
+    //else
+    //{
+        SlowPrintf("###########################\n");
+        SlowPrintf("---------AKINATOR----------\n");
+        SlowPrintf("###########################\n\n");   
+    //}
 }
-
 
 void SlowPrintf(const char *fmt, ...)
 {
@@ -290,3 +321,33 @@ int ClearBuf(void)
 			garbage = 1;
 	return garbage;	
 }
+
+void AskQuestion(const char *question, VisualFlag_t flag)
+{
+    if (flag == GRAPHICS_FLAG)
+        RenderQuestion(question);
+    else
+        SlowPrintf("%s\n", question);
+}
+
+Answer_t GetAnswer(VisualFlag_t flag)
+{
+    if (flag == GRAPHICS_FLAG)
+        return HandleGraphicsAnswer();
+    else 
+    {
+        return HandleTerminalAnswer();
+    }
+}
+
+Answer_t HandleTerminalAnswer(void)
+{
+    char ch = 0;
+    scanf("%c", &ch);
+
+    if (ch == 'n' || ch == 'N')
+        return NO;
+    else return YES;
+}
+
+
