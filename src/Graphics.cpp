@@ -6,7 +6,6 @@ void InitGraphics()
     SetTraceLogLevel(LOG_NONE);     
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "");
 
-    Camera2D camera = { 0 };
     camera.target = (Vector2){ 0.0f, 0.0f };      
     camera.offset = (Vector2){ SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; 
     camera.rotation = 0.0f;                       
@@ -18,6 +17,7 @@ void InitGraphics()
 void RenderQuestion(const char *question)
 {
     BeginDrawing();
+    BeginMode2D(camera);
 
     ClearBackground(RAYWHITE);
 
@@ -29,6 +29,7 @@ void RenderQuestion(const char *question)
     DrawText("YES", X_ZERO - SCREEN_WIDTH / 2 + 40, Y_ZERO, AnsFontSize, RAYWHITE);
     DrawText("NO", X_ZERO + SCREEN_WIDTH / 2 - AnsRectWidth - 20, Y_ZERO, AnsFontSize, RAYWHITE);
 
+    EndMode2D();
     EndDrawing();
 }
 
@@ -36,8 +37,8 @@ Answer_t HandleGraphicsAnswer(void)
 {
     Vector2 mouse = GetMousePosition();
 
-    Rectangle YesRect = { X_ZERO - QuestRectWidth / 2, Y_ZERO - 300, QuestRectWidth, QuestRectHeight };
-    Rectangle NoRect  = { X_ZERO - SCREEN_WIDTH / 2 + 30, Y_ZERO, AnsRectWidth, AnsRectHeight };
+    Rectangle YesRect  = { X_ZERO - SCREEN_WIDTH / 2 + 30, Y_ZERO, AnsRectWidth, AnsRectHeight };
+    Rectangle NoRect = { X_ZERO - QuestRectWidth / 2, Y_ZERO - 300, QuestRectWidth, QuestRectHeight };
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {

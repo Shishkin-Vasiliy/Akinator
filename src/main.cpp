@@ -10,15 +10,15 @@ int main(void)
     LogCtx_t LogCtx = {};
     TreeLogInit(&LogCtx);
 
-    AkinatorPreOrderCtor(&Tree, "clash_royale_preorder.txt", TERMINAL_FLAG);
+    AkinatorPreOrderCtor(&Tree, "clash_royale_preorder.txt", GRAPHICS_FLAG);
 
-    AkinatorStart(&Tree, "database/clash_royale_preorder.txt", PREORDER, &LogCtx, TERMINAL_FLAG);
+    AkinatorStart(&Tree, "database/clash_royale_preorder.txt", PREORDER, &LogCtx, GRAPHICS_FLAG);
 
     //DefineNode(&Tree, "ice_spirit");
 
     //Difference(&Tree, "sparky", "goblins");
 
-    AkinatorDtor(&Tree, TERMINAL_FLAG);
+    AkinatorDtor(&Tree, GRAPHICS_FLAG);
     TreeLogDeinit(&LogCtx);
 
     return 0;
