@@ -1,6 +1,8 @@
 #include "Akinator.h"
 #include "Graphics.h"
 
+Camera2D camera = { 0 };
+
 void InitGraphics()
 {
     SetTraceLogLevel(LOG_NONE);     

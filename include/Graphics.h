@@ -11,7 +11,7 @@
 #include "rlgl.h"
 #include "raymath.h"
 
-Camera2D camera = { 0 };
+extern Camera2D camera;
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
