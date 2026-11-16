@@ -35,23 +35,27 @@ void RenderQuestion(const char *question)
     EndDrawing();
 }
 
-Answer_t HandleGraphicsAnswer(void)
+Answer_t HandleGraphicsAnswer(const char *question)
 {
-    Vector2 mouse = GetMousePosition();
-
-    Rectangle YesRect  = { X_ZERO - SCREEN_WIDTH / 2 + 30, Y_ZERO, AnsRectWidth, AnsRectHeight };
-    Rectangle NoRect = { X_ZERO - QuestRectWidth / 2, Y_ZERO - 300, QuestRectWidth, QuestRectHeight };
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    while (!WindowShouldClose())
     {
-        if (CheckCollisionPointRec(mouse, YesRect))
-            return YES;
-        
-        if (CheckCollisionPointRec(mouse, NoRect))
-            return NO;
+        RenderQuestion(question);
+        Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
+
+        Rectangle YesRect = { X_ZERO - SCREEN_WIDTH / 2 + 30, Y_ZERO, AnsRectWidth, AnsRectHeight };
+        Rectangle NoRect  = { X_ZERO + SCREEN_WIDTH / 2 - AnsRectWidth - 30, Y_ZERO, AnsRectWidth, AnsRectHeight };
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            if (CheckCollisionPointRec(mouse, YesRect))
+                return YES;
+
+            if (CheckCollisionPointRec(mouse, NoRect))
+                return NO;
+        }
     }
 
-    return DONTKNOW;
+    return NO;
 }
 
 //void RenderGreet(void)

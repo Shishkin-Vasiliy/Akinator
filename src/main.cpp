@@ -14,9 +14,9 @@ int main(void)
 
     AkinatorStart(&Tree, "database/clash_royale_preorder.txt", PREORDER, &LogCtx, GRAPHICS_FLAG);
 
-    //DefineNode(&Tree, "ice_spirit");
+    DefineNode(&Tree, "ice_spirit");
 
-    //Difference(&Tree, "sparky", "goblins");
+    Difference(&Tree, "sparky", "goblins");
 
     AkinatorDtor(&Tree, GRAPHICS_FLAG);
     TreeLogDeinit(&LogCtx);

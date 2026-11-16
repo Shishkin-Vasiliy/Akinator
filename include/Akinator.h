@@ -39,7 +39,7 @@ void SlowPrintf(const char *fmt, ...);
 int ClearBuf(void);
 void Greet(VisualFlag_t flag);
 void AskQuestion(const char *qustion, VisualFlag_t flag);
-Answer_t GetAnswer(VisualFlag_t flag);
+Answer_t GetAnswer(const char *question, VisualFlag_t flag);
 Answer_t HandleTerminalAnswer(void);
 
 TreeErr_t AkinatorPreOrderCtor(Tree_t *Tree, const char *file_name, VisualFlag_t flag);

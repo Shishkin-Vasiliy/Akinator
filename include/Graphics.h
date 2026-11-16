@@ -29,10 +29,9 @@ const int AnsRectWidth = 200;
 const int AnsRectHeight = 200;
 const int AnsFontSize = 40; 
 
-//void RenderGreet(void);
 void RenderQuestion(const char *question);
 void InitGraphics(void);
 void RenderQuestion(const char *qustion);
-Answer_t HandleGraphicsAnswer(void);
+Answer_t HandleGraphicsAnswer(const char *question);
 
 #endif
